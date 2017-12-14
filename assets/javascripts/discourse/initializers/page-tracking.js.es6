@@ -37,10 +37,18 @@ export default {
       onPageChange((url, title) => {
         var app = container.lookup('controller:application');
         var route_name = app.currentRouteName;
-        var event_payload = {} ; // {'event': 'virtualPageView'};
+        var event_payload = {'event': 'LeroyMerlin_Pageview'};
 
-        if (route_name.match(/^discovery\./)) {
-          if (route_name != 'discovery.categories') {
+        if (route_name.match(/^full-page-search/)) {
+          var search_controller = container.lookup('controller:full-page-search');
+          var search_term = search_controller.get('searchTerm');
+          var results_count = search_controller.get('resultCount') || 0;
+          event_payload['pageType'] = 'ForumSearchResults';
+          event_payload['searchKeyword'] = search_term;
+          event_payload['searchTotal'] = results_count;
+          window.dataLayer.push(event_payload);
+        }else if (route_name.match(/^discovery\./)) {
+          if (route_name == 'discovery.parentCategory') {
             var discovery_controller = container.lookup('controller:discovery');
             var category = discovery_controller.get('category');
             if (category) {
@@ -48,6 +56,9 @@ export default {
               event_payload['discussionCategoryName'] = category.get('name');
               window.dataLayer.push(event_payload);
             }
+          } else if (route_name == 'discovery.categories') {
+            event_payload['pageType'] = 'Forum';
+            window.dataLayer.push(event_payload);
           }
         } else if (route_name.match(/^topic\./)) {
           var topic_controller = container.lookup('controller:topic');
